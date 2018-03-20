@@ -422,7 +422,7 @@ class Motor:
 
   @command.setter
   def command(self, value):
-    os.write(self._fd['command'], str(value).encode('ascii'))
+    os.write(self._fd['command'], value.encode('ascii'))
     return 0
 
   @property
@@ -437,7 +437,7 @@ class Motor:
 
   @duty_cycle_sp.setter
   def duty_cycle_sp(self, value):
-    os.write(self._fd['duty_cycle_sp'], str(value).encode('ascii'))
+    os.write(self._fd['duty_cycle_sp'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -467,7 +467,7 @@ class Motor:
 
   @polarity.setter
   def polarity(self, value):
-    os.write(self._fd['polarity'], str(value).encode('ascii'))
+    os.write(self._fd['polarity'], value.encode('ascii'))
     return 0
 
   @property
@@ -477,7 +477,7 @@ class Motor:
 
   @position.setter
   def position(self, value):
-    os.write(self._fd['position'], str(value).encode('ascii'))
+    os.write(self._fd['position'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -487,7 +487,7 @@ class Motor:
 
   @position_d.setter
   def position_d(self, value):
-    os.write(self._fd['position_d'], str(value).encode('ascii'))
+    os.write(self._fd['position_d'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -497,7 +497,7 @@ class Motor:
 
   @position_i.setter
   def position_i(self, value):
-    os.write(self._fd['position_i'], str(value).encode('ascii'))
+    os.write(self._fd['position_i'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -507,7 +507,7 @@ class Motor:
 
   @position_p.setter
   def position_p(self, value):
-    os.write(self._fd['position_p'], str(value).encode('ascii'))
+    os.write(self._fd['position_p'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -517,7 +517,7 @@ class Motor:
 
   @position_sp.setter
   def position_sp(self, value):
-    os.write(self._fd['position_sp'], str(value).encode('ascii'))
+    os.write(self._fd['position_sp'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -527,7 +527,7 @@ class Motor:
 
   @ramp_down_sp.setter
   def ramp_down_sp(self, value):
-    os.write(self._fd['ramp_down_sp'], str(value).encode('ascii'))
+    os.write(self._fd['ramp_down_sp'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -537,7 +537,7 @@ class Motor:
 
   @ramp_up_sp.setter
   def ramp_up_sp(self, value):
-    os.write(self._fd['ramp_up_sp'], str(value).encode('ascii'))
+    os.write(self._fd['ramp_up_sp'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -552,7 +552,7 @@ class Motor:
 
   @speed_d.setter
   def speed_d(self, value):
-    os.write(self._fd['speed_d'], str(value).encode('ascii'))
+    os.write(self._fd['speed_d'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -562,7 +562,7 @@ class Motor:
 
   @speed_i.setter
   def speed_i(self, value):
-    os.write(self._fd['speed_i'], str(value).encode('ascii'))
+    os.write(self._fd['speed_i'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -572,7 +572,7 @@ class Motor:
 
   @speed_p.setter
   def speed_p(self, value):
-    os.write(self._fd['speed_p'], str(value).encode('ascii'))
+    os.write(self._fd['speed_p'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -582,7 +582,7 @@ class Motor:
 
   @speed_sp.setter
   def speed_sp(self, value):
-    os.write(self._fd['speed_sp'], str(value).encode('ascii'))
+    os.write(self._fd['speed_sp'], str(int(value)).encode('ascii'))
     return 0
 
   @property
@@ -597,7 +597,7 @@ class Motor:
 
   @stop_action.setter
   def stop_action(self, value):
-    os.write(self._fd['stop_action'], str(value).encode('ascii'))
+    os.write(self._fd['stop_action'], value.encode('ascii'))
     return 0
 
   @property
@@ -607,7 +607,7 @@ class Motor:
 
   @time_sp.setter
   def time_sp(self, value):
-    os.write(self._fd['time_sp'], str(value).encode('ascii'))
+    os.write(self._fd['time_sp'], str(int(value)).encode('ascii'))
     return 0
 
   def reset(self, **kwargs):
