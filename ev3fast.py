@@ -48,7 +48,7 @@ class Sensor:
       if address:
         try:
           with open(directory + 'address', 'r') as f:
-            if f.read().rstrip() == address:
+            if address in f.read():
               self._directory = directory
               break
         except FileNotFoundError:
