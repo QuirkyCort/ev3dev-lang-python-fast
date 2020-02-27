@@ -248,7 +248,7 @@ class ColorSensor(Sensor):
     self.red_max = 300
     self.green_max = 300
     self.blue_max = 300
-    super.__init__(self, address)
+    super().__init__(address)
 
   @property
   def reflected_light_intensity(self):
