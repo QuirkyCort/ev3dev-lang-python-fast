@@ -28,7 +28,7 @@ class Sensor:
 
   _PRE_OPENS = {
     'bin_data': [ RDONLY ],
-    'bin_data_format': [ RDONLY,  ],
+    'bin_data_format': [ RDONLY ],
     'command': [ WRONLY ],
     'decimals': [ RDONLY ],
     'mode': [ RDWR ],
