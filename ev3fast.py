@@ -838,7 +838,7 @@ class Motor:
     if value > 0:
       os.write(self._fd['speed_sp'], self.speed_sp_table[0][value])
     else:
-      os.write(self._fd['speed_sp'], self.speed_sp_table[1][value])
+      os.write(self._fd['speed_sp'], self.speed_sp_table[1][-value])
     return 0
 
   @property
