@@ -86,7 +86,7 @@ class Sensor:
           setattr(self, pre_read[0], pre_read[1](f.read().rstrip()))
       except:
         pass
-  
+
   def bin_data(self, fmt=None):
     value_size = self._BYTES_FMT[self.bin_data_format][0]
     num_bytes = self.num_values * value_size
@@ -166,7 +166,7 @@ class TouchSensor(Sensor):
   _DRIVER_NAME = 'lego-ev3-touch'
 
   MODE_TOUCH = 'TOUCH'
-  
+
   def __init__(self, address=None):
     self._PRE_OPENS.append(('value0', os.O_RDONLY))
     super().__init__(address)
@@ -192,19 +192,19 @@ class TouchSensor(Sensor):
     while True:
       if self.is_pressed == desired_state:
         return True
-      
+
       if timeout_ms is not None and time.time() >= tic + timeout_ms/1000:
         return False
-      
+
       if sleep_ms:
         time.sleep(sleep_ms)
-  
+
   def wait_for_pressed(self, timeout_ms=None, sleep_ms=10):
     return self._wait(True, timeout_ms, sleep_ms)
-  
+
   def wait_for_released(self, timeout_ms=None, sleep_ms=10):
     return self._wait(False, timeout_ms, sleep_ms)
-  
+
   def wait_for_bump(self, timeout_ms=None, sleep_ms=10):
     start_time = time.time()
 
@@ -285,7 +285,7 @@ class ColorSensor(Sensor):
     os.lseek(self._fd['bin_data'], 0, os.SEEK_SET)
     data = os.read(self._fd['bin_data'], 6)
     return struct.unpack('<hhh', data)
-  
+
   @property
   def calibrate_white(self):
     (self.red_max, self.green_max, self.blue_max) = self.raw
@@ -332,7 +332,7 @@ class UltrasonicSensor(Sensor):
   MODE_US_LISTEN = 'US-LISTEN'
   MODE_US_SI_CM = 'US-SI-CM'
   MODE_US_SI_IN = 'US-SI-IN'
-    
+
   @property
   def distance_centimeters(self):
     if (self._currentMode != self.MODE_US_DIST_CM):
@@ -367,8 +367,8 @@ class GyroSensor(Sensor):
   MODE_GYRO_G_A = 'GYRO-G&A'
   MODE_GYRO_RATE = 'GYRO-RATE'
   MODE_TILT_ANG = 'TILT-ANGLE'
-  MODE_TILT_RATE = 'TILT-RATE'  
-    
+  MODE_TILT_RATE = 'TILT-RATE'
+
   @property
   def angle(self):
     if (self._currentMode != self.MODE_GYRO_ANG):
@@ -403,13 +403,13 @@ class SpeedValue:
 
   def __lt__(self, other):
     return self.to_native_units() < other.to_native_units()
-  
+
   def __rmul__(self,other):
     return self.__mul__(other)
-  
+
   def to_native_units(self):
     pass
-  
+
   def __mul__(self, other):
     pass
 
@@ -469,7 +469,7 @@ class SpeedRPS(SpeedValue):
 
   def __str__(self):
     return str(self.rotations_per_second) + " rot/sec"
-    
+
   def __mul__(self, other):
     if isinstance(other, (float, int)):
       return SpeedRPS(self.rotations_per_second * other)
@@ -494,19 +494,19 @@ class SpeedRPM(SpeedValue):
 
   def __str__(self):
     return str(self.rotations_per_minute) + " rot/min"
-    
+
   def __mul__(self, other):
     if isinstance(other, (float, int)):
       return SpeedRPM(self.rotations_per_minute * other)
     else:
-      raise TypeError("Multiplier must be of type float or int") 
+      raise TypeError("Multiplier must be of type float or int")
 
   def to_native_units(self, motor):
     if abs(self.rotations_per_minute) <= motor.max_rpm:
       return self.rotations_per_minute/motor.max_rpm * motor.max_speed
     else:
       raise ValueError("RPM Value must be <= motor.max_rpm")
-    
+
 
 class SpeedDPS(SpeedValue):
   """
@@ -613,12 +613,16 @@ class Motor:
     ('max_speed', int),
     ('stop_actions', str)
   ]
-    
+
   _DRIVER_NAME = None
 
-  speed_sp_table = []
+  max_speed = 1000
+  count_per_rot = 360
+
+  speed_sp_table = [[], []]
   for i in range(0, 1561):
-    speed_sp_table.append(str(i).encode())
+    speed_sp_table[0].append(str(i).encode())
+    speed_sp_table[1].append(str(-i).encode())
 
   def __init__(self, address=None):
     self._fd = {}
@@ -673,7 +677,7 @@ class Motor:
   def command(self, value):
     os.write(self._fd['command'], value.encode('ascii'))
     return 0
-  
+
   @property
   def duty_cycle(self):
     os.lseek(self._fd['duty_cycle'], 0, os.SEEK_SET)
@@ -831,7 +835,10 @@ class Motor:
 
   @speed_sp.setter
   def speed_sp(self, value):
-    os.write(self._fd['speed_sp'], self.speed_sp_table[value])
+    if value > 0:
+      os.write(self._fd['speed_sp'], self.speed_sp_table[0][value])
+    else:
+      os.write(self._fd['speed_sp'], self.speed_sp_table[1][value])
     return 0
 
   @property
@@ -870,7 +877,7 @@ class Motor:
     for k in kwargs:
       setattr(self, k, kwargs[k])
     os.write(self._fd['command'], b'reset\n')
-    
+
   def run_direct(self, **kwargs):
     """
     Run the motor at the duty cycle specified by duty_cycle_sp.
@@ -880,7 +887,7 @@ class Motor:
     for k in kwargs:
       setattr(self, k, kwargs[k])
     os.write(self._fd['command'], b'run-direct\n')
-    
+
   def run_forever(self, **kwargs):
     """
     Run the motor until another command is sent.
@@ -934,7 +941,7 @@ class Motor:
     Exits early when ``timeout`` (in milliseconds) is reached.
 
     Returns ``True`` if the condition is met, and ``False`` if the timeout
-    is reached.   
+    is reached.
 
     Valid flags for state attribute: running, ramping, holding,
     overloaded and stalled
@@ -947,7 +954,7 @@ class Motor:
 
       if len(event) == 0:
         return False
-      
+
       if cond(self.state):
         return True
 
@@ -1037,7 +1044,7 @@ class Motor:
     if block:
       self.wait_until('running', timeout=WAIT_RUNNING_TIMEOUT)
       self.wait_until_not_moving()
-  
+
   def on_for_degrees(self, speed, degrees, brake=True, block=True):
     """
     Rotate the motor at ``speed`` for ``degrees``
@@ -1141,7 +1148,7 @@ class Motor:
       speed_sp = int(round(speed.to_native_units(self)))
 
     self.speed_sp = int(round(speed_sp))
-    
+
     if brake:
       self.stop_action = self.STOP_ACTION_HOLD
     else:
@@ -1152,14 +1159,14 @@ class Motor:
     if block:
       self.wait_until('running', timeout=WAIT_RUNNING_TIMEOUT)
       self.wait_until_not_moving()
-    
+
   def off(self, brake=True):
 
     if brake:
       self.stop_action = self.STOP_ACTION_HOLD
     else:
       self.stop_action = self.STOP_ACTION_COAST
-    
+
     self.stop()
 
 
@@ -1192,7 +1199,7 @@ class MotorSet:
       for k in kwargs:
         setattr(self, k, kwargs[k])
       os.write(motor._fd['command'], b'reset\n')
-   
+
   def run_forever(self, **kwargs):
     for motor in self.motors.values():
       for k in kwargs:
@@ -1225,13 +1232,13 @@ class MotorSet:
 
   def off(self, motors=None, brake=True):
     motors = motors if motors is not None else self.motors.values()
-    
+
     for motor in motors:
       motor.stop_action = motor.STOP_ACTION_HOLD if brake else motor.STOP_ACTION_COAST
-    
+
     for motor in motors:
       motor.stop()
-    
+
   def stop(self, motors=None, brake=True):
     self.off(motors, brake)
 
@@ -1242,7 +1249,7 @@ class MotorSet:
       if state not in motor.state:
         return False
     return True
-  
+
   @property
   def is_ramping(self, motors=None, state=Motor.STATE_RAMPING):
     motors = motors if motors is not None else self.motors.values()
@@ -1250,7 +1257,7 @@ class MotorSet:
       if state not in motor.state:
         return False
     return True
-  
+
   @property
   def is_holding(self, motors=None, state=Motor.STATE_HOLDING):
     motors = motors if motors is not None else self.motors.values()
@@ -1258,7 +1265,7 @@ class MotorSet:
       if state not in motor.state:
         return False
     return True
-  
+
   @property
   def is_overloaded(self, motors=None, state=Motor.STATE_OVERLOADED):
     motors = motors if motors is not None else self.motors.values()
@@ -1266,7 +1273,7 @@ class MotorSet:
       if state not in motor.state:
         return False
     return True
-  
+
   @property
   def is_stalled(self, motors=None, state=Motor.STATE_STALLED):
     motors = motors if motors is not None else self.motors.values()
@@ -1274,7 +1281,7 @@ class MotorSet:
       if state not in motor.state:
         return False
     return True
-  
+
   def wait(self, cond, timeout=None, motors=None):
     motors = motors if motors is not None else self.motors.values()
 
@@ -1298,7 +1305,7 @@ class MotorSet:
 
     for motor in motors:
       motor.wait_while(s, timeout)
-  
+
   def _block(self):
     self.wait_until('running', timeout=self.WAIT_RUNNING_TIMEOUT)
     self.wait_until_not_moving()
@@ -1315,7 +1322,7 @@ class MoveTank(MotorSet):
     self.left_motor = self.motors[left_motor_port]
     self.right_motor = self.motors[right_motor_port]
     self.max_speed = self.left_motor.max_speed
-  
+
   def on_for_degrees(self, left_speed, right_speed, degrees, brake=True, block=True):
     """
     Rotate the motors at 'left_speed' and 'right_speed' for 'degrees'.
@@ -1334,7 +1341,7 @@ class MoveTank(MotorSet):
         raise Exception("Invalid Speed Percentage. Speed must be between -100 and 100)")
     else:
       left_speed_var = int(round(left_speed.to_native_units(self.left_motor)))
-  
+
     if not isinstance(right_speed, SpeedValue):
       if -100 <= right_speed <= 100:
         right_speed_obj = SpeedPercent(right_speed)
@@ -1353,7 +1360,7 @@ class MoveTank(MotorSet):
     else:
       left_degrees = abs(left_speed_var / right_speed_var) * degrees
       right_degrees = degrees
-    
+
     left_degrees_in = round((left_degrees * self.left_motor.count_per_rot)/360)
     right_degrees_in = round((right_degrees * self.right_motor.count_per_rot)/360)
 
@@ -1370,7 +1377,7 @@ class MoveTank(MotorSet):
 
     if block:
       self._block()
-  
+
   def on_for_rotations(self, left_speed, right_speed, rotations, brake=True, block=True):
     """
     Rotate the motors at 'left_speed' and 'right_speed' for 'rotations'.
@@ -1380,7 +1387,7 @@ class MoveTank(MotorSet):
     turn), the motor on the outside of the turn will rotate for the full
     ``rotations`` while the motor on the inside will have its requested
     distance calculated according to the expected turn.
-    """    
+    """
     MoveTank.on_for_degrees(self, left_speed, right_speed, rotations * 360, brake, block)
 
   def on_for_seconds(self, left_speed, right_speed, seconds, brake=True, block=True):
@@ -1399,8 +1406,8 @@ class MoveTank(MotorSet):
         raise Exception("Invalid Speed Percentage. Speed must be between -100 and 100)")
     else:
       left_speed_var = int(round(left_speed.to_native_units(self.left_motor)))
-      
-  
+
+
     if not isinstance(right_speed, SpeedValue):
       if -100 <= right_speed <= 100:
         right_speed_obj = SpeedPercent(right_speed)
@@ -1417,12 +1424,12 @@ class MoveTank(MotorSet):
 
     self.left_motor.stop_action = self.left_motor.STOP_ACTION_HOLD if brake else self.left_motor.STOP_ACTION_COAST
     self.right_motor.stop_action = self.right_motor.STOP_ACTION_HOLD if brake else self.right_motor.STOP_ACTION_COAST
-    
+
     self.left_motor.run_timed()
     self.right_motor.run_timed()
 
     if block:
-      self._block()    
+      self._block()
 
   def on(self, left_speed, right_speed):
     """
@@ -1438,7 +1445,7 @@ class MoveTank(MotorSet):
         raise Exception("Invalid Speed Percentage. Speed must be between -100 and 100)")
     else:
       left_speed_var = int(round(left_speed.to_native_units(self.left_motor)))
-  
+
     if not isinstance(right_speed, SpeedValue):
       if -100 <= right_speed <= 100:
         right_speed_obj = SpeedPercent(right_speed)
@@ -1455,7 +1462,7 @@ class MoveTank(MotorSet):
 
 
 class MoveSteering(MoveTank):
-  
+
   def get_speed_steering(self, steering, speed):
     if steering > 100 or steering < -100:
       raise ValueError("Invalid Steering Value. Between -100 and 100 (inclusive).")
@@ -1478,7 +1485,7 @@ class MoveSteering(MoveTank):
       right_speed *= speed_factor
     else:
       left_speed *= speed_factor
-    
+
     return(left_speed, right_speed)
 
   def on_for_rotations(self, steering, speed, rotations, brake=True, block=True):
@@ -1505,7 +1512,7 @@ class MoveSteering(MoveTank):
     """
     (left_speed, right_speed) = self.get_speed_steering(steering, speed)
     MoveTank.on_for_seconds(self, SpeedNativeUnits(left_speed), SpeedNativeUnits(right_speed), seconds, brake, block)
-  
+
   def on(self, steering, speed):
     """
     Start rotating the motors according to the provided ``steering`` and
