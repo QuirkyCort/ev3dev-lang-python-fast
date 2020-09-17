@@ -676,9 +676,13 @@ class Motor:
 
   _DRIVER_NAME = None
 
-  speed_sp_table = []
+  max_speed = 1000
+  count_per_rot = 360
+
+  speed_sp_table = [[], []]
   for i in range(0, 1561):
-    speed_sp_table.append(str(i).encode())
+    speed_sp_table[0].append(str(i).encode())
+    speed_sp_table[1].append(str(-i).encode())
 
   def __init__(self, address=None):
     self._fd = {}
@@ -891,7 +895,10 @@ class Motor:
 
   @speed_sp.setter
   def speed_sp(self, value):
-    os.write(self._fd['speed_sp'], self.speed_sp_table[value])
+    if value > 0:
+      os.write(self._fd['speed_sp'], self.speed_sp_table[0][value])
+    else:
+      os.write(self._fd['speed_sp'], self.speed_sp_table[1][value])
     return 0
 
   @property
