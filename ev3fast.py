@@ -70,7 +70,7 @@ class Sensor:
             if address in f.read():
               self._directory = directory
               break
-        except FileNotFoundError:
+        except:
           pass
       else:
         try:
@@ -78,7 +78,7 @@ class Sensor:
             if f.read().rstrip() == self._DRIVER_NAME:
               self._directory = directory
               break
-        except FileNotFoundError:
+        except:
           pass
 
     for key in self._PRE_OPENS:
@@ -695,7 +695,7 @@ class Motor:
             if address in f.read():
               self._directory = directory
               break
-        except FileNotFoundError:
+        except:
           pass
       else:
         try:
@@ -703,7 +703,7 @@ class Motor:
             if f.read().rstrip() == self._DRIVER_NAME:
               self._directory = directory
               break
-        except FileNotFoundError:
+        except:
           pass
     self._pre_open()
     self._pre_read()
