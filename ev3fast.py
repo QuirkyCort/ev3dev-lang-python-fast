@@ -9,19 +9,17 @@ from collections import OrderedDict
 from math import pi
 
 WAIT_RUNNING_TIMEOUT = 100
-USE_OS_OPEN = True
 
 if sys.implementation.name == 'micropython':
   USE_OS_OPEN = False
-
-if USE_OS_OPEN:
-  RDONLY = os.O_RDONLY
-  WRONLY = os.O_WRONLY
-  RDWR = os.O_RDWR
-else:
   RDONLY = 'rb'
   WRONLY = 'wb'
   RDWR = 'wb+'
+else:
+  USE_OS_OPEN = True
+  RDONLY = os.O_RDONLY
+  WRONLY = os.O_WRONLY
+  RDWR = os.O_RDWR
 
 class Sensor:
   _DIRECTORY_BASE = '/sys/class/lego-sensor/sensor'
@@ -224,7 +222,7 @@ class TouchSensor(Sensor):
   MODE_TOUCH = 'TOUCH'
 
   def __init__(self, address=None):
-    self._PRE_OPENS['value0'] = [ os.O_RDONLY ]
+    self._PRE_OPENS['value0'] = [ RDONLY ]
     super().__init__(address)
 
   @property
